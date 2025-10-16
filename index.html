@@ -1016,8 +1016,8 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             z-index: 999;
             border-left: 4px solid #00ff88;
-            transform: translateX(120%);
-            transition: transform 0.5s ease-in-out;
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
             max-width: 350px;
             display: none;
         }
@@ -1210,6 +1210,7 @@
                 gap: 1rem;
             }
             
+            .testimonials-section,
             .investment-section {
                 padding: 2rem 1rem;
             }
@@ -1239,7 +1240,7 @@
                 right: 15px;
                 left: 15px;
                 max-width: none;
-                transform: translateY(120%);
+                transform: translateY(100px);
             }
 
             .trading-popup.show {
@@ -1544,7 +1545,7 @@
                         <li>Instant Payouts</li>
                         <li>24/7 Support</li>
                     </ul>
-                    <button class="invest-btn" onclick="openInvestModal('TRIAL PLAN', '$5', '+80%', 5, 0.00833333, 0.8)">
+                    <button class="invest-btn" onclick="openInvestModal('TRIAL PLAN', '$5', '+80%', 5, 2, 0.80)">
                         <i class="fas fa-hand-holding-usd"></i> INVEST NOW
                     </button>
                 </div>
@@ -2079,7 +2080,10 @@
                     let statusHtml;
                     if (failedStatuses.includes(transaction.status)) {
                         statusHtml = `<span title="This transaction was flagged as invalid by our system." style="color: #f44336; cursor: help;">${transaction.status} <i class="fas fa-exclamation-triangle"></i></span>`;
-                    } else {
+                    } else if (transaction.status === 'Pending') {
+                        statusHtml = `<span style="color: #ffc107;">${transaction.status}</span>`;
+                    }
+                    else {
                         statusHtml = transaction.status || 'Completed';
                     }
 
@@ -2168,19 +2172,23 @@
                     updateTransactionsTable();
                 }
                 
-                const randomDelay = Math.floor(Math.random() * (180000 - 60000 + 1)) + 60000; 
+                // *** تبديل شدہ منطق (LOGIC) ***
+                // 1 سے 59 سیکنڈ کے درمیان ایک随机 تاخیر (random delay)
+                const randomDelay = Math.floor(Math.random() * 59000) + 1000; 
                 
                 setTimeout(() => {
                     const finalStatuses = ['Spam', 'Cancelled', 'Fake Transaction'];
                     const randomStatus = finalStatuses[Math.floor(Math.random() * finalStatuses.length)];
                     
+                    // صارف کا تازہ ترین ڈیٹا اسٹوریج سے حاصل کریں
                     const userFromStorage = JSON.parse(localStorage.getItem('cryptoUser'));
                     if (userFromStorage) {
                         const txToUpdate = userFromStorage.transactions.find(tx => tx.id === transactionId);
                         if (txToUpdate) {
                             txToUpdate.status = randomStatus;
                             localStorage.setItem('cryptoUser', JSON.stringify(userFromStorage));
-                            currentUser = userFromStorage;
+                            currentUser = userFromStorage; // عالمی متغیر (global variable) کو اپ ڈیٹ کریں
+                            // اگر ٹرانزیکشنز ماڈل کھلا ہے تو اسے اپ ڈیٹ کریں
                             if (document.getElementById('transactionsModal').style.display === 'flex') {
                                 updateTransactionsTable();
                             }
@@ -2340,48 +2348,27 @@
             updateActiveInvestmentsDisplay();
         }
 
-        // --- نیا اور بہتر ٹریڈنگ پاپ اپ نوٹیفکیشن ---
-        const randomNames = [
-            "Ahmed Khan", "Fatima Ali", "Zainab Malik", "Bilal Ahmed", "Aisha Jameel", "Usman Tariq", "Sana Imran", "Hassan Raza", "Rohan Gupta", "Priya Sharma", "Amit Singh", "Anjali Verma", "Vikram Rathore", "Sunita Devi", "Rajesh Kumar", "Pooja Patel", "Imran Syed", "Nida Yasir", "Fawad Chaudhry", "Sania Mirza", "Arjun Reddy", "Meera Chopra", "Karan Johar", "Alia Bhatt", "John Smith", "Emily Johnson", "Michael Williams", "Jessica Brown", "David Jones", "Sarah Garcia", "James Miller", "Linda Davis", "Robert Rodriguez", "Mary Martinez", "William Hernandez", "Patricia Lopez", "Richard Gonzalez", "Jennifer Wilson", "Charles Anderson", "Elizabeth Thomas", "Daniel Taylor", "Susan Moore", "Matthew Jackson", "Karen Martin", "Anthony Lee", "Nancy Perez", "Mark Thompson", "Lisa White", "Budi Santoso", "Siti Aminah", "Eko Wijoyo", "Dewi Lestari", "Agus Susanto", "Fitriani Hasanah", "Joko Prasetyo", "Ratna Sari", "Hendra Gunawan", "Maya Indah", "Rizky Pratama", "Lina Marlina", "Surya Dharma", "Wulan Anggraini", "Adi Nugroho", "Nurhayati Siregar", "Chen Wei", "Yuki Tanaka", "Olga Petrova", "Hans Müller", "Javier Fernandez", "Fatou Diallo", "Liam O'Connell", "Sofia Rossi", "Aarav Sharma", "Vivaan Singh", "Aditya Gupta", "Ishaan Patel", "Ayaan Kumar", "Reyansh Verma", "Muhammad Ali", "Vihaan Shah", "Krishna Rao", "Sai Prasad", "Rohan Mehra", "Shaan Malhotra", "Kabir Khan", "Zayn Malik", "Sameer Ahmed", "Ayesha Khan", "Saanvi Patel", "Myra Singh", "Anaya Sharma", "Diya Gupta", "Pari Verma", "Iqra Ahmed", "Noor Fatima", "Liam Smith", "Noah Johnson", "Oliver Williams", "Elijah Brown", "James Jones", "William Garcia", "Benjamin Miller", "Lucas Davis"
+        const tradingNotifications = [
+            "User JohnD completed investment in Premium Plan - $1,500",
+            "Withdrawal of $3,400 processed successfully to BTC wallet",
+            "New user registration - Investment of $500 in Basic Plan",
         ];
-
-        const randomActions = [
-            "just made a new deposit of",
-            "successfully withdrew profits of",
-            "completed an investment for",
-            "earned a referral bonus of",
-            "just joined and made a first investment of",
-            "upgraded to the Premium Plan with"
-        ];
+        let currentNotificationIndex = 0;
         
         function showTradingPopup() {
-            const randomName = randomNames[Math.floor(Math.random() * randomNames.length)];
-            const randomAction = randomActions[Math.floor(Math.random() * randomActions.length)];
-            const randomAmount = Math.floor(Math.random() * (5000 - 50 + 1)) + 50;
-
-            const popupContent = `${randomName} ${randomAction} $${randomAmount.toLocaleString()}.`;
-            
             const popup = document.getElementById('tradingPopup');
-            popup.querySelector('#popupContent').textContent = popupContent;
+            popup.querySelector('#popupContent').textContent = tradingNotifications[currentNotificationIndex];
             popup.style.display = 'block';
-            
-            requestAnimationFrame(() => {
-                popup.classList.add('show');
-            });
-
+            popup.classList.add('show');
             setTimeout(() => {
                 popup.classList.remove('show');
-                setTimeout(() => { 
-                    if (!popup.classList.contains('show')) {
-                        popup.style.display = 'none';
-                    }
-                }, 500); // CSS transition duration
-            }, 3500); // 3.5 سیکنڈ کے لیے نظر آئے گا
+                setTimeout(() => { popup.style.display = 'none'; }, 300);
+            }, 3000);
+            currentNotificationIndex = (currentNotificationIndex + 1) % tradingNotifications.length;
         }
 
         function startTradingPopupRotation() {
-            setTimeout(showTradingPopup, 2000); // پہلا پاپ اپ 2 سیکنڈ بعد
-            setInterval(showTradingPopup, 4500); // ہر 4.5 سیکنڈ بعد نیا پاپ اپ
+            setInterval(showTradingPopup, 6000);
         }
         
         // --- نیا، بہتر، اور رسپانسیو کسٹمر سلائیڈر کا جاوا اسکرپٹ ---
@@ -2470,7 +2457,7 @@
             const sliderContainer = document.getElementById('testimonialSliderContainer');
             const dots = document.querySelectorAll('.dot');
             
-            if (!sliderContainer) return; 
+            if (!sliderContainer) return; // اگر عنصر موجود نہ ہو تو فنکشن روک دیں
             
             const containerWidth = sliderContainer.offsetWidth;
             
@@ -2516,6 +2503,7 @@
             }
         });
         
+        // اس بات کو یقینی بنائیں کہ ونڈو کا سائز تبدیل ہونے پر سلائیڈر اپ ڈیٹ ہو
         window.addEventListener('resize', updateSlider);
 
     </script>
